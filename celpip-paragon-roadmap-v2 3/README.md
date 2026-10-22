@@ -49,3 +49,7 @@ Each project has a `percent` field (0-100, set via `admin.html`). On the timelin
 
 A separate list of ideas that aren't scheduled and aren't in the backlog yet — no dates, no status, no timeline. Stored in `roadmap-data.json` as a top-level `parkingLot` array (each idea: `id`, `name`, optional `category`, `jira`, `objective` for notes). Add/edit/delete ideas in `admin.html` ("+ Add idea" in the Parking Lot panel below the timeline). On the public page it appears below the timeline as a read-only card list, and **the whole section stays hidden until at least one idea exists**. The search box and category filter apply to it too (ideas with no category are hidden while a category filter is active).
 
+## Prototype link
+
+Each project has an optional `prototypeUrl` field (the "Prototype link" input in `admin.html`). When set, a "Prototype" link appears right after "Jira" under the project name on the timeline, and as a "Prototype" row in the detail panel. When empty, nothing is shown. Only `http://` and `https://` links are rendered.
+

@@ -285,6 +285,20 @@
       "jira": "",
       "objective": "",
       "percent": 0
+    },
+    {
+      "id": "1792693038093",
+      "category": "Business Operations",
+      "name": "Improve Business Voucher Process",
+      "owner": "Unassigned",
+      "status": "In Progress",
+      "priority": "Medium",
+      "start": "2026-10",
+      "end": "2027-03",
+      "jira": "",
+      "prototypeUrl": "https://celpip_roadmap.paragontesting.ca/Invoice/voucher-po-portal.html",
+      "objective": "",
+      "percent": 5
     }
   ],
   "parkingLot": [
@@ -319,13 +333,6 @@
     {
       "id": "i1791317649535",
       "name": "Speaking First?",
-      "category": "",
-      "jira": "",
-      "objective": ""
-    },
-    {
-      "id": "i1792080520402",
-      "name": "Improve Business Voucher Process",
       "category": "",
       "jira": "",
       "objective": ""

@@ -6,6 +6,7 @@ let projects=[], parkingLot=[], collapsed=new Set(); const $=id=>document.getEle
 function loadCollapsed(){try{collapsed=new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY)||"[]"))}catch{collapsed=new Set()}}
 function saveCollapsed(){localStorage.setItem(COLLAPSED_KEY,JSON.stringify([...collapsed]))}
 function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeUrl(u){return /^https?:\/\//i.test(u||"")?u:""}
 function d(s){let [y,m]=s.split("-").map(Number);return new Date(y,m-1,1)}
 function addMonth(x,n){return new Date(x.getFullYear(),x.getMonth()+n,1)}
 function diff(a,z){return(z.getFullYear()-a.getFullYear())*12+z.getMonth()-a.getMonth()}
@@ -80,10 +81,11 @@ function render(){
     let rows=isCollapsed?"":g.items.map(p=>{
       let s=Math.max(0,diff(r.first,d(p.start))),e=Math.min(r.months-1,diff(r.first,d(p.end))),left=`calc(var(--label) + ${s} * var(--month) + 5px)`,width=`calc(${e-s+1} * var(--month) - 10px)`;
       let jiraLink=p.jira?` &middot; <a href="${esc(p.jira)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Jira</a>`:"";
+      let protoUrl=safeUrl(p.prototypeUrl),protoLink=protoUrl?` &middot; <a href="${esc(protoUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Prototype</a>`:"";
       let barColor=color(p.status),pct=Math.max(0,Math.min(100,Number(p.percent)||0));
       let barFill=hasProgress(p.status)?`<div class="barFill" style="width:${pct}%;background:${barColor}"></div>`:`<div class="barFill" style="width:100%;background:${barColor}"></div>`;
       let barBg=hasProgress(p.status)?hexToRgba(barColor,.28):barColor;
-      return `<div class="projectRow"><div class="projectInfo sticky" data-id="${p.id}"><div><button data-id="${p.id}">${esc(p.name)}</button><span>${esc(p.owner)} &middot; ${esc(p.status)}${jiraLink}</span></div></div>${months.map(()=>'<div class="cell"></div>').join("")}<div class="bar" data-id="${p.id}" style="left:${left};width:${width};background:${barBg}">${barFill}<span class="barLabel">${esc(p.name)}</span></div></div>`
+      return `<div class="projectRow"><div class="projectInfo sticky" data-id="${p.id}"><div><button data-id="${p.id}">${esc(p.name)}</button><span>${esc(p.owner)} &middot; ${esc(p.status)}${jiraLink}${protoLink}</span></div></div>${months.map(()=>'<div class="cell"></div>').join("")}<div class="bar" data-id="${p.id}" style="left:${left};width:${width};background:${barBg}">${barFill}<span class="barLabel">${esc(p.name)}</span></div></div>`
     }).join("");
     return header+rows;
   }).join("");
@@ -108,6 +110,7 @@ function open(id){
   if(hasProgress(p.status))rows.push(["% Complete",`${Math.max(0,Math.min(100,Number(p.percent)||0))}%`]);
   rows.push(["Timeline",`${esc(monthLabel(p.start))} &ndash; ${esc(monthLabel(p.end))}`]);
   if(p.jira)rows.push(["Jira",`<a href="${esc(p.jira)}" target="_blank" rel="noopener noreferrer">${esc(p.jira)}</a>`]);
+  if(safeUrl(p.prototypeUrl))rows.push(["Prototype",`<a href="${esc(p.prototypeUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.prototypeUrl)}</a>`]);
   let notesHtml=p.objective?`<div class="detailNotes"><small>Notes</small><p>${esc(p.objective)}</p></div>`:"";
   $("dialogBody").innerHTML=rows.map(([k,v])=>`<div><small>${k}</small><div>${v}</div></div>`).join("")+notesHtml;
   $("dialog").showModal();

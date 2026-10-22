@@ -6,6 +6,7 @@ let projects=[], parkingLot=[], collapsed=new Set(), fileHandle=null; const $=id
 function loadCollapsed(){try{collapsed=new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY)||"[]"))}catch{collapsed=new Set()}}
 function saveCollapsed(){localStorage.setItem(COLLAPSED_KEY,JSON.stringify([...collapsed]))}
 function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeUrl(u){return /^https?:\/\//i.test(u||"")?u:""}
 function d(s){let [y,m]=s.split("-").map(Number);return new Date(y,m-1,1)}
 function addMonth(x,n){return new Date(x.getFullYear(),x.getMonth()+n,1)}
 function diff(a,z){return(z.getFullYear()-a.getFullYear())*12+z.getMonth()-a.getMonth()}
@@ -79,10 +80,11 @@ function render(){
     let rows=isCollapsed?"":g.items.map(p=>{
       let s=Math.max(0,diff(r.first,d(p.start))),e=Math.min(r.months-1,diff(r.first,d(p.end))),left=`calc(var(--label) + ${s} * var(--month) + 5px)`,width=`calc(${e-s+1} * var(--month) - 10px)`;
       let jiraLink=p.jira?` &middot; <a href="${esc(p.jira)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Jira</a>`:"";
+      let protoUrl=safeUrl(p.prototypeUrl),protoLink=protoUrl?` &middot; <a href="${esc(protoUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Prototype</a>`:"";
       let barColor=color(p.status),pct=Math.max(0,Math.min(100,Number(p.percent)||0));
       let barFill=hasProgress(p.status)?`<div class="barFill" style="width:${pct}%;background:${barColor}"></div>`:`<div class="barFill" style="width:100%;background:${barColor}"></div>`;
       let barBg=hasProgress(p.status)?hexToRgba(barColor,.28):barColor;
-      return `<div class="projectRow"><div class="projectInfo sticky"><div><button data-id="${p.id}">${esc(p.name)}</button><span>${esc(p.owner)} &middot; ${esc(p.status)}${jiraLink}</span></div></div>${months.map(()=>'<div class="cell"></div>').join("")}<div class="bar" data-id="${p.id}" style="left:${left};width:${width};background:${barBg}">${barFill}<span class="barLabel">${esc(p.name)}</span></div></div>`
+      return `<div class="projectRow"><div class="projectInfo sticky"><div><button data-id="${p.id}">${esc(p.name)}</button><span>${esc(p.owner)} &middot; ${esc(p.status)}${jiraLink}${protoLink}</span></div></div>${months.map(()=>'<div class="cell"></div>').join("")}<div class="bar" data-id="${p.id}" style="left:${left};width:${width};background:${barBg}">${barFill}<span class="barLabel">${esc(p.name)}</span></div></div>`
     }).join("");
     return header+rows;
   }).join("");
@@ -96,7 +98,7 @@ function render(){
 }
 function open(id){
   $("form").reset();$("error").textContent="";$("id").value=id||"";$("delete").style.visibility=id?"visible":"hidden";
-  if(id){let p=projects.find(x=>x.id===id);["name","owner","start","end","objective","jira"].forEach(k=>$(k).value=p[k]||"");$("pCategory").value=p.category;$("pStatus").value=p.status;$("priority").value=p.priority;$("percent").value=p.percent||0}
+  if(id){let p=projects.find(x=>x.id===id);["name","owner","start","end","objective","jira","prototypeUrl"].forEach(k=>$(k).value=p[k]||"");$("pCategory").value=p.category;$("pStatus").value=p.status;$("priority").value=p.priority;$("percent").value=p.percent||0}
   else{$("pCategory").value=CATEGORIES[0];$("pStatus").value="Discovery";$("priority").value="Medium";$("percent").value=0}
   $("dialog").showModal();
 }
@@ -105,7 +107,7 @@ $("form").onsubmit=e=>{
   e.preventDefault();
   if($("end").value<$("start").value){$("error").textContent="End month must be on or after start month.";return}
   let id=$("id").value||String(Date.now());
-  let p={id,category:$("pCategory").value,name:$("name").value.trim(),owner:$("owner").value.trim(),status:$("pStatus").value,priority:$("priority").value,start:$("start").value,end:$("end").value,jira:$("jira").value.trim(),objective:$("objective").value.trim(),percent:Math.max(0,Math.min(100,Number($("percent").value)||0))};
+  let p={id,category:$("pCategory").value,name:$("name").value.trim(),owner:$("owner").value.trim(),status:$("pStatus").value,priority:$("priority").value,start:$("start").value,end:$("end").value,jira:$("jira").value.trim(),prototypeUrl:$("prototypeUrl").value.trim(),objective:$("objective").value.trim(),percent:Math.max(0,Math.min(100,Number($("percent").value)||0))};
   let n=projects.findIndex(x=>x.id===id);n<0?projects.push(p):projects[n]=p;
   init();render();close();
   writeLinkedFile();
